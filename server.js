@@ -1,50 +1,40 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-// const { Kafka } = require("kafkajs"); // Kafka disabled for now
+// const { Kafka } = require("kafkajs");
 
-// Load environment variables
 require("dotenv").config();
-
 const app = express();
-const port = process.env.PORT || 3000; // ✅ Cloud platforms assign ports
+const port = process.env.PORT || 3000;
 
-// Middleware to parse incoming JSON
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // Handles JSON payloads
 
-// ---- Kafka Setup (Commented Out) ----
-// const kafka = new Kafka({
-//   clientId: process.env.KAFKA_CLIENT_ID || "esp32-producer",
-//   brokers: (process.env.KAFKA_BROKERS || "localhost:9092").split(","),
-// });
-// const producer = kafka.producer();
-
-// const runProducer = async () => {
-//   await producer.connect();
-//   console.log("✅ Kafka producer connected");
-// };
-
-// runProducer().catch(console.error);
-
-// ---- Endpoint for ESP32 Sensor Data ----
-app.post("/sensor-data", async (req, res) => {
-  const data = req.body;
-  console.log("📥 Received from ESP32:", data);
-
-  try {
-    // Future: send to Kafka
-    // await producer.send({
-    //   topic: process.env.KAFKA_TOPIC || "sensor-data",
-    //   messages: [{ value: JSON.stringify(data) }],
-    // });
-
-    res.status(200).send("✅ Data received"); // ✅ basic success
-  } catch (err) {
-    console.error("❌ Error:", err);
-    res.status(500).send("Server error");
+// 👇 Add this to catch invalid JSON (e.g. from ESP32 if malformed)
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    console.error("❌ Invalid JSON received:", err.message);
+    return res.status(400).send("Invalid JSON");
   }
+  next();
 });
 
-// ---- Start the Server ----
+// ---- POST /sensor-data ----
+app.post("/sensor-data", async (req, res) => {
+  const data = req.body;
+
+  // 👀 Logging + sanity check
+  console.log("📥 Headers:", req.headers);
+  console.log("📥 Raw Body:", data);
+
+  if (!data || typeof data !== "object") {
+    console.error("❌ Missing or invalid body");
+    return res.status(400).send("Invalid or missing JSON body");
+  }
+
+  // Future: Kafka send here
+  res.status(200).send("✅ Data received");
+});
+
+// ---- Start Server ----
 app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${port}`);
 });
