@@ -1,4 +1,14 @@
 {
+  "name": "esp32-server",
+  "version": "1.0.0",
+  "description": "Express server to receive sensor data from ESP32",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server"
+  },
+  "keywords": [],
+  "author": "Andrew Lee",
+  "license": "MIT",
   "dependencies": {
     "body-parser": "^2.2.0",
     "dotenv": "^16.4.5",
