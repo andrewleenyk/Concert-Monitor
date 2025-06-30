@@ -22,11 +22,10 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.post("/sensor-data", async (req, res) => {
+app.post("/sensor-data", (req, res) => {
+  console.log("📥 Parsed Body:", JSON.stringify(req.body, null, 2));
+
   const data = req.body;
-
-  console.log("📥 Parsed Body:", JSON.stringify(data, null, 2));
-
   if (!data || typeof data !== "object") {
     console.error("❌ Missing or invalid body");
     return res.status(400).send("Invalid or missing JSON body");
