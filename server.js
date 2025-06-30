@@ -18,10 +18,9 @@ const wss = new WebSocket.Server({ server, path: "/live" });
 wss.on("connection", (ws) => {
   console.log("🔗 WS client connected");
 
-  ws.on("message", (data, isBinary) => {
-    const msg = isBinary ? data.toString("utf8") : data;
+  ws.on("message", (data) => {
+    const msg = data.toString();
     console.log("📥 WS message:", msg);
-
     wss.clients.forEach((client) => {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
         client.send(msg);
